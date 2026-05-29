@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FleetManager Inspector</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<header id="topbar">
+  <div class="topbar-left">
+    <div class="app-brand">
+      <span class="app-icon">&#9881;</span>
+      <h1>FleetManager</h1>
+      <span class="app-sub">Batch Inspector</span>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <span id="topbarStatus" class="topbar-status disconnected">
+      <span class="status-dot"></span>
+      <span class="status-text">Disconnected</span>
+    </span>
+  </div>
+  <div class="topbar-right">
+    <span id="msgCount" class="msg-count">0 messages</span>
+    <button class="btn-icon" id="btnConfig" title="Settings">&#9881;</button>
+  </div>
+</header>
+
+<!-- ═══ MAIN LAYOUT ═══ -->
+<div id="main">
+
+  <!-- ─── LEFT PANE ─── -->
+  <div id="leftPane">
+    <div class="pane-toolbar">
+      <div class="toolbar-row">
+        <div class="search-wrapper">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" id="searchInput" placeholder="Search body, ID, queue..." spellcheck="false">
+          <button class="btn-icon btn-search-clear" id="clearSearch" title="Clear">&#10005;</button>
+        </div>
+        <button class="btn btn-small" id="btnFetch" title="Fetch all active failed messages">&#8635; Load</button>
+      </div>
+      <div class="toolbar-row toolbar-meta">
+        <button class="btn btn-tag" id="filterQueue" title="Filter by queue">Queue: All</button>
+        <button class="btn btn-tag" id="filterTags" title="Filter by tags">Tags: All</button>
+        <span class="toolbar-sort">
+          <label>Sort:</label>
+          <select id="sortSelect">
+            <option value="time-desc">Time &#9660;</option>
+            <option value="time-asc">Time &#9650;</option>
+            <option value="queue">Queue</option>
+            <option value="id">Message ID</option>
+          </select>
+        </span>
+      </div>
+    </div>
+
+    <!-- Column headers -->
+    <div id="listHeaders" class="list-headers">
+      <span class="col-idx">#</span>
+      <span class="col-id" title="Message ID">ID</span>
+      <span class="col-queue" title="Source queue">Queue</span>
+      <span class="col-time" title="Time failed">Time</span>
+      <span class="col-preview" title="First line of message body">Body Preview</span>
+    </div>
+
+    <!-- Virtual scroll container -->
+    <div id="listContainer" class="list-container">
+      <div id="listViewport" class="list-viewport"></div>
+    </div>
+
+    <!-- Pagination bar -->
+    <div id="listFooter" class="list-footer hidden">
+      <span id="rangeInfo">0&ndash;0 of 0</span>
+      <div class="list-footer-actions">
+        <button class="btn btn-small" id="btnExpandAll" title="Expand all">&#9660; Expand all</button>
+        <button class="btn btn-small" id="btnCollapseAll" title="Collapse all">&#9650; Collapse</button>
+        <button class="btn btn-small btn-primary" id="btnDownload" title="Download all bodies as text file">&#128229; Download</button>
+        <button class="btn btn-small btn-danger" id="btnClear">&#128465; Clear</button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon">&#128196;</div>
+      <h3>No messages loaded</h3>
+      <p>Enter your API token and account ID, then click <strong>Load</strong>.</p>
+      <button class="btn btn-primary" id="btnEmptyConfig">&#9881; Configure</button>
+    </div>
+  </div>
+
+  <!-- ─── RIGHT PANE ─── -->
+  <div id="rightPane" class="detail-pane">
+    <div id="detailEmpty" class="detail-empty">
+      <span class="detail-empty-icon">&#128269;</span>
+      <p>Select a message to inspect its details</p>
+      <p class="detail-empty-hint">Click any row in the list, or use <kbd>&uarr;</kbd> <kbd>&darr;</kbd> to navigate</p>
+    </div>
+    <div id="detailContent" class="detail-content hidden">
+      <div class="detail-header">
+        <div class="detail-id-row">
+          <span class="detail-id-label">Message ID</span>
+          <code id="detailMsgId" class="detail-id"></code>
+          <button class="btn-icon" id="detailCopyId" title="Copy ID">&#128203;</button>
+        </div>
+        <div class="detail-meta">
+          <span id="detailQueue" class="detail-tag queue-tag"></span>
+          <span id="detailTime" class="detail-tag time-tag"></span>
+          <span id="detailMachine" class="detail-tag machine-tag"></span>
+          <span id="detailActive" class="detail-tag active-tag"></span>
+        </div>
+      </div>
+
+      <div class="detail-tabs">
+        <button class="tab active" data-tab="body">Body</button>
+        <button class="tab" data-tab="headers">Headers</button>
+        <button class="tab" data-tab="exception">Exception</button>
+        <button class="tab" data-tab="raw">Raw</button>
+      </div>
+
+      <div class="detail-body-area">
+        <!-- Body tab -->
+        <div id="tabBody" class="tab-content active">
+          <div id="bodyViewer" class="body-viewer"></div>
+        </div>
+        <!-- Headers tab -->
+        <div id="tabHeaders" class="tab-content">
+          <table id="headersTable" class="kv-table"></table>
+        </div>
+        <!-- Exception tab -->
+        <div id="tabException" class="tab-content">
+          <pre id="exceptionViewer" class="exception-viewer"></pre>
+        </div>
+        <!-- Raw tab -->
+        <div id="tabRaw" class="tab-content">
+          <pre id="rawViewer" class="raw-viewer"></pre>
+        </div>
+      </div>
+
+      <div class="detail-actions">
+        <button class="btn btn-small" id="detailCopyBody">&#128203; Copy Body</button>
+        <button class="btn btn-small" id="detailCopyRaw">&#128203; Copy Raw</button>
+        <button class="btn btn-small" id="detailCopyAll">&#128203; Copy All</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STATUS BAR ═══ -->
+<footer id="statusbar">
+  <span id="statusLeft" class="status-left">Ready</span>
+  <span id="statusRight" class="status-right"></span>
+</footer>
+
+<!-- ═══ CONFIG MODAL ═══ -->
+<div id="configModal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Configuration</h2>
+      <button class="btn-icon" id="closeConfig">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label for="cfgApiUrl">FleetManager API URL</label>
+        <input id="cfgApiUrl" type="text" value="https://manager.rebus.fm" placeholder="https://manager.rebus.fm" class="input-mono">
+      </div>
+      <div class="field-group">
+        <label for="cfgAccountId">Account ID</label>
+        <input id="cfgAccountId" type="text" placeholder="your-account-id" class="input-mono">
+      </div>
+      <div class="field-group">
+        <label for="cfgToken">Bearer Token</label>
+        <div class="input-with-toggle">
+          <input id="cfgToken" type="password" placeholder="your-api-token" class="input-mono">
+          <button class="btn-icon" id="toggleToken" title="Show/hide token">&#128065;</button>
+        </div>
+      </div>
+      <div class="field-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="cfgAutoLoad" checked>
+          <span>Auto-load messages on connect</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span id="configStatus" class="config-status"></span>
+      <div class="modal-footer-buttons">
+        <button class="btn btn-secondary" id="btnTest">Test Connection</button>
+        <button class="btn btn-primary" id="btnSave">Save &amp; Load</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
