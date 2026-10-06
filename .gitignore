@@ -8,3 +8,9 @@ __pycache__/
 # Node (only needed for the jsdom UI tests)
 node_modules/
 package-lock.json
+
+# .NET
+bin/
+obj/
+*.user
+.vs/

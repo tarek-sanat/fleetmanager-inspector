@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/dotnet/">
+    <Project Path="dotnet/FleetManagerInspector.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="dotnet-tests/FleetManagerInspector.Tests.csproj" />
+  </Folder>
+</Solution>

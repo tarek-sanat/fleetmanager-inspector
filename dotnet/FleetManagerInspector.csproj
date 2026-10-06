@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>FleetManagerInspector</AssemblyName>
+    <RootNamespace>FleetManagerInspector</RootNamespace>
+    <!-- The shared front end lives in ../static, outside this project, so keep the
+         build output tidy and don't let the SDK glob it. -->
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+</Project>

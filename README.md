@@ -18,12 +18,27 @@ A local web server that:
 
 ## How to use
 
+Two interchangeable servers ship in this repo — a Python one and a .NET 10 one.
+Both serve the same `static/` front end and expose the same API, so use whichever
+fits your machine.
+
+### .NET 10 (recommended on Windows)
+
 ```bash
-cd fleetmanager-inspector
+dotnet run --project dotnet
+```
+
+→ Opens at `http://localhost:8080`
+
+### Python 3 (no SDK required)
+
+```bash
 python server.py
 ```
 
 → Opens Chrome at `http://localhost:8080`
+
+### Then, in either case
 
 1. Enter your FleetManager **Account ID** and **Bearer Token** (generate in FleetManager → Team Setup → External API)
 2. Click **Test Connection** to verify
@@ -85,27 +100,61 @@ The `body` field in `FailedMessageDetails` is **Base64-encoded**. The app decode
 ## Tests
 
 ```bash
-python3 tests/smoke_test.py          # server: routing, status codes, SSRF guard
-node tests/ui_test.js                # UI: virtual scroll, filters, highlighter
+# .NET (35 tests)
+dotnet test FleetManagerInspector.slnx
+
+# Python server + jsdom UI suite (56 checks)
+python3 tests/smoke_test.py
+node tests/ui_test.js
 ```
 
-The UI test needs `jsdom` (`npm install jsdom`). Both suites run offline — no FleetManager account required.
+Both suites run offline — no FleetManager account required. The C# and Python
+server tests assert the same contract, so a behavioural drift between the two
+implementations shows up as a failure.
 
 ## File layout
 
 ```
 fleetmanager-inspector/
-├── server.py             # Python HTTP server + API proxy
-├── static/
-│   ├── index.html        # Chrome UI
-│   ├── style.css         # Dark theme
-│   └── app.js            # Frontend logic
-├── tests/
-│   ├── smoke_test.py     # Server-side smoke tests
-│   └── ui_test.js        # Headless DOM tests (jsdom)
-├── .gitignore
+├── server.py                     # Python HTTP server + API proxy
+├── FleetManagerInspector.slnx    # .NET solution
+├── static/                       # Shared front end (used by BOTH servers)
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+├── dotnet/                       # .NET 10 server
+│   ├── Program.cs                # Host, routing, startup
+│   ├── Config.cs                 # Port, timeouts, allowed hosts
+│   ├── ApiUrl.cs                 # URL validation + error hints
+│   ├── FleetManagerClient.cs     # Upstream HTTP client, parallel batch fetch
+│   ├── Endpoints.cs              # The five /api routes
+│   ├── StaticFiles.cs            # Static file serving + traversal guard
+│   ├── Json.cs                   # Response shaping
+│   └── HttpContextExtensions.cs
+├── dotnet-tests/                 # xUnit parity tests
+│   ├── ApiUrlTests.cs
+│   ├── ServerSmokeTests.cs
+│   └── WebApplicationFixture.cs
+├── tests/                        # Python-server + UI tests
+│   ├── smoke_test.py
+│   └── ui_test.js
 └── README.md
 ```
+
+## Choosing between the two servers
+
+They are feature-equivalent and share one front end. Practical differences:
+
+| | .NET 10 | Python 3 |
+|---|---|---|
+| Runtime needed | .NET 10 SDK | Any Python 3.8+ |
+| Startup | ~1s | Instant |
+| Concurrency | Native async, `SemaphoreSlim` gate | `ThreadPoolExecutor` |
+| Port change | `Config.Port` in `dotnet/Config.cs` | `PORT` in `server.py` |
+| Static dir override | `FM_STATIC_DIR` env var | Fixed to `./static` |
+
+If you change the API contract, change it in **both** servers and re-run both test
+suites — that's what they're there for.
 
 ## Notes / gotchas
 
