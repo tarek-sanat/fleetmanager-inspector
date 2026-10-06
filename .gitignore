@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .DS_Store
 *.swp
+
+# Node (only needed for the jsdom UI tests)
+node_modules/
+package-lock.json

@@ -210,6 +210,11 @@ kbd {
   border-color: var(--border);
 }
 .btn-tag:hover { color: var(--text-primary); }
+.btn-tag.active {
+  background: var(--accent-dim);
+  color: var(--accent-hover);
+  border-color: var(--accent-glow);
+}
 
 .toolbar-sort { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted); }
 .toolbar-sort select {
@@ -255,16 +260,21 @@ kbd {
   position: relative;
 }
 
-/* Row */
+/* Row — absolutely positioned so the virtual scroller can place each row
+   at top = index * ROW_HEIGHT (must match ROW_HEIGHT in app.js). */
 .msg-row {
+  position: absolute;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   padding: 5px 12px;
+  height: 30px;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 50ms;
   font-size: 12px;
-  min-height: 30px;
+  contain: layout paint;
 }
 .msg-row:hover { background: var(--bg-hover); }
 .msg-row.selected { background: var(--bg-active); }
@@ -435,6 +445,8 @@ kbd {
   color: var(--text-primary);
   word-break: break-all;
 }
+.kv-table .kv-key-dim { color: var(--text-muted); }
+.kv-table .kv-empty { color: var(--text-muted); padding: 8px; }
 
 /* Exception viewer */
 .exception-viewer {

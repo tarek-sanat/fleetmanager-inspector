@@ -38,16 +38,16 @@
       <div class="toolbar-row">
         <div class="search-wrapper">
           <span class="search-icon">&#128269;</span>
-          <input type="text" id="searchInput" placeholder="Search body, ID, queue..." spellcheck="false">
+          <input type="text" id="searchInput" placeholder="Search body, ID, queue..." spellcheck="false" aria-label="Search messages">
           <button class="btn-icon btn-search-clear" id="clearSearch" title="Clear">&#10005;</button>
         </div>
         <button class="btn btn-small" id="btnFetch" title="Fetch all active failed messages">&#8635; Load</button>
       </div>
       <div class="toolbar-row toolbar-meta">
-        <button class="btn btn-tag" id="filterQueue" title="Filter by queue">Queue: All</button>
-        <button class="btn btn-tag" id="filterTags" title="Filter by tags">Tags: All</button>
+        <button class="btn btn-tag" id="filterQueue" data-filter="all" title="Filter by queue (cycles through queues)">Queue: All</button>
+        <button class="btn btn-tag" id="filterTags" data-filter="all" title="Toggle: show only messages that have tags">Tags: All</button>
         <span class="toolbar-sort">
-          <label>Sort:</label>
+          <label for="sortSelect">Sort:</label>
           <select id="sortSelect">
             <option value="time-desc">Time &#9660;</option>
             <option value="time-asc">Time &#9650;</option>
@@ -59,16 +59,16 @@
     </div>
 
     <!-- Column headers -->
-    <div id="listHeaders" class="list-headers">
-      <span class="col-idx">#</span>
-      <span class="col-id" title="Message ID">ID</span>
-      <span class="col-queue" title="Source queue">Queue</span>
-      <span class="col-time" title="Time failed">Time</span>
-      <span class="col-preview" title="First line of message body">Body Preview</span>
+    <div id="listHeaders" class="list-headers hidden" role="row">
+      <span class="col-idx" role="columnheader">#</span>
+      <span class="col-id" role="columnheader" title="Message ID">ID</span>
+      <span class="col-queue" role="columnheader" title="Source queue">Queue</span>
+      <span class="col-time" role="columnheader" title="Time failed">Time</span>
+      <span class="col-preview" role="columnheader" title="First line of message body">Body Preview</span>
     </div>
 
-    <!-- Virtual scroll container -->
-    <div id="listContainer" class="list-container">
+    <!-- Virtual scroll container: children are absolutely positioned by app.js -->
+    <div id="listContainer" class="list-container" role="rowgroup" tabindex="0">
       <div id="listViewport" class="list-viewport"></div>
     </div>
 
